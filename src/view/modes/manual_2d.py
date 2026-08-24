@@ -10,18 +10,20 @@ class Manual2D(QWidget):
         super().__init__(parent)
         self.groups = []
         self.group_pv_samplers = []
-        control_view_settings_splitter = QSplitter(Qt.Orientation.Horizontal)
+        group_view_solution_splitter = QSplitter(Qt.Orientation.Horizontal)
         
         scatter_function_splitter =  QSplitter(Qt.Orientation.Vertical)
         self.scatter_panel = ScatterPanel(scatter_function_splitter)
         self.function_panel = FunctionPanel(scatter_function_splitter)
 
-        self.control_panel = ControlPanel(control_view_settings_splitter)
-        self.control_panel.request_new_control_widget.connect(self.on_new_group_requested)
-        control_view_settings_splitter.addWidget(scatter_function_splitter)
-        
+        self.group_panel = ControlPanel(group_view_solution_splitter)
+        self.group_panel.request_new_control_widget.connect(self.on_new_group_requested)
+        group_view_solution_splitter.addWidget(scatter_function_splitter)
+        self.solution_panel = ControlPanel(group_view_solution_splitter)
+        self.solution_panel.request_new_control_widget.connect(self.on_new_solution_requested)
+
         layout = QVBoxLayout(self)
-        layout.addWidget(control_view_settings_splitter)
+        layout.addWidget(group_view_solution_splitter)
         layout.setContentsMargins(0, 0, 0, 0) 
 
         self.group_initializer = GroupInitializer()
@@ -34,12 +36,14 @@ class Manual2D(QWidget):
         del self.group_pv_samplers[index]
 
     @Slot()
+    def on_new_solution_requested(self):
+        print('new solution requested')
     def on_new_group_requested(self):
         group, group_control_view, group_scatter_view, group_function_view_connector, group_pv_sampler = self.group_initializer.make_group_3d(self.sample_coordinate_picker.get_surface_data())
         group.delete_requested.connect(self.on_group_delete_requested)
         self.groups.append(group)
         self.sample_coordinate_picker.resolution_changed.connect(group_pv_sampler.on_resolution_changed)
-        self.control_panel.add_control(group_control_view)
+        self.group_panel.add_control(group_control_view)
         self.scatter_panel.add_group(group_scatter_view)
         self.function_panel.add_group(group_function_view_connector)
         self.group_pv_samplers.append(group_pv_sampler)

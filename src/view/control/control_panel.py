@@ -1,10 +1,7 @@
 from PySide6.QtWidgets import *
-from PySide6.QtCore import Qt
 from src.view.scatter.scatter_2d import *
-from PySide6.QtCore import Slot,Signal
-import pandas as pd
-import numpy as np
-from src.view.control.polar_control import *
+from PySide6.QtCore import Signal
+
 
 
 class ControlPanel(QScrollArea):

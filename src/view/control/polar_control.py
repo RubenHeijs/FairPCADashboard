@@ -3,10 +3,10 @@ from PySide6.QtCore import Qt, Slot, QTimer
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtCore import Signal
 from src.util.helpers_3d import get_basis_from_angles
+from src.view.control_components.color_button import ColorButton
+from src.view.control_components.control_slider import ControlSlider
 import numpy as np
-SLIDER_RESOLUTION = 1000
-MIN_VARIANCE = 0.1
-MAX_VARIANCE = 10
+
 
 class PolarControl(QFrame):
     color_changed = Signal(QColor)
@@ -21,7 +21,10 @@ class PolarControl(QFrame):
     lambda_2_hovered = Signal(bool)
     lambda_3_hovered = Signal(bool)
 
-    def __init__(self, name, init_color, parent = None):
+    def __init__(self, name, init_color, parent = None, slider_resolution = 1000, min_var=0.1, max_var=10):
+        self.min_var = min_var
+        self.max_var = max_var
+        self.slider_resolution = slider_resolution
         super(PolarControl, self).__init__(parent)
         self.setFrameShape(QFrame.Shape.StyledPanel)
         
@@ -70,37 +73,37 @@ class PolarControl(QFrame):
         self.lambda_2_slider.set_value(l2)
 
     def add_sliders(self):
-        self.var_slider = ControlSlider('σ<sup>2</sup>',MIN_VARIANCE, MAX_VARIANCE)
+        self.var_slider = ControlSlider('σ<sup>2</sup>',self.min_var, self.max_var, resolution = self.slider_resolution)
         self.var_slider.value_changed.connect(self.on_var_change)
         self.grid.addWidget(self.var_slider,1,0,1,2)
         self.var_slider.hover.connect(self.var_hovered.emit)
 
-        self.alpha_slider = ControlSlider('α',0.0, 2.0, unit = 'π')
+        self.alpha_slider = ControlSlider('α',0.0, 2.0, unit = 'π' , resolution = self.slider_resolution)
         self.alpha_slider.value_changed.connect(self.on_alpha_change)
         self.grid.addWidget(self.alpha_slider,2,0,1,2)
         self.alpha_slider.hover.connect(self.alpha_hovered.emit)
 
-        self.beta_slider = ControlSlider('β',0.0, 2.0, unit = 'π')
+        self.beta_slider = ControlSlider('β',0.0, 2.0, unit = 'π', resolution = self.slider_resolution)
         self.beta_slider.value_changed.connect(self.on_beta_change)
         self.grid.addWidget(self.beta_slider,3,0,1,2)
         self.beta_slider.hover.connect(self.beta_hovered.emit)
 
-        self.theta_slider = ControlSlider('θ',0.0, 2.0, unit = 'π')
+        self.theta_slider = ControlSlider('θ',0.0, 2.0, unit = 'π', resolution = self.slider_resolution)
         self.theta_slider.value_changed.connect(self.on_theta_change)
         self.grid.addWidget(self.theta_slider,4,0,1,2)
         self.theta_slider.hover.connect(self.theta_hovered.emit)
 
-        self.lambda_1_slider = ControlSlider('λ<sub>1</sub>', 1/3, 1.0 )
+        self.lambda_1_slider = ControlSlider('λ<sub>1</sub>', 1/3, 1.0, resolution = self.slider_resolution )
         self.lambda_1_slider.value_changed.connect(self.on_lambda_1_change)
         self.grid.addWidget(self.lambda_1_slider,5,0,1,2)
         self.lambda_1_slider.hover.connect(self.lambda_1_hovered.emit)
 
-        self.lambda_2_slider = ControlSlider('λ<sub>2</sub>', 1/3, 1/3)
+        self.lambda_2_slider = ControlSlider('λ<sub>2</sub>', 1/3, 1/3, resolution = self.slider_resolution)
         self.lambda_2_slider.value_changed.connect(self.on_lambda_2_change)
         self.grid.addWidget(self.lambda_2_slider,6,0,1,2)
         self.lambda_2_slider.hover.connect(self.lambda_2_hovered.emit)
 
-        self.lambda_3_slider = ControlSlider('λ<sub>3</sub>', 1/3, 1/3, display_slider=False)
+        self.lambda_3_slider = ControlSlider('λ<sub>3</sub>', 1/3, 1/3, display_slider=False, resolution = self.slider_resolution)
         self.lambda_3_slider.value_changed.connect(self.on_lambda_3_change)
         self.grid.addWidget(self.lambda_3_slider,7,0,1,2)
         self.lambda_3_slider.hover.connect(self.lambda_3_hovered.emit)
@@ -159,94 +162,3 @@ class PolarControl(QFrame):
     def trigger_pending_update(self):
         self.group_input_changed.emit(self.pending_e_vals, self.pending_e_vecs, self.pending_var)
 
-
-from src.util.helpers_general import interpolate
-class ControlSlider(QWidget):
-    value_changed = Signal(float)
-    hover = Signal(bool)
-    def __init__(self,title,min, max, unit = "", parent = None, display_slider = True):
-        super(ControlSlider, self).__init__(parent)
-        self.unit = unit
-        self.min = min
-        self.max = max
-
-        self.grid = QHBoxLayout(self)
-        self.grid.setContentsMargins(0,3,0,3)
-
-        self.text_label = QLabel(title)
-        self.text_label.setFixedWidth(15)
-        self.grid.addWidget(self.text_label,alignment = Qt.AlignmentFlag.AlignLeft)
-
-        self.slider = QSlider(orientation = Qt.Orientation.Horizontal)
-        self.slider.valueChanged.connect(self.on_slider_change)
-        self.slider.setRange(0,SLIDER_RESOLUTION)
-        self.grid.addWidget(self.slider)
-
-        policy = self.slider.sizePolicy()
-        policy.setRetainSizeWhenHidden(True)
-        self.slider.setSizePolicy(policy)
-        self.slider.setVisible(display_slider)
-    
-        self.value_label = QLabel('0')
-        self.value_label.setFixedWidth(30)
-        self.grid.addWidget(self.value_label,alignment = Qt.AlignmentFlag.AlignRight)
-
-        self.hover_palette = self.text_label.palette()
-        self.default_palette = self.text_label.palette()
-    def on_slider_change(self,slider_val):
-        val = interpolate(slider_val,0,SLIDER_RESOLUTION,self.min,self.max)
-        self.value_label.setText(str(np.round(val,2))+self.unit)
-        self.value_changed.emit(val)
-
-    def set_color(self, color):
-        self.hover_palette.setColor(QPalette.ColorRole.WindowText,color)
-
-    def set_bounds_and_update_value(self, min, max):
-        self.min = min
-        self.max = max
-        self.on_slider_change(self.slider.value())
-
-    def set_value(self,val):
-        val = max(min(val,self.max),self.min)
-        slider_val = interpolate(val,self.min, self.max, 0, SLIDER_RESOLUTION)
-        self.value_label.setText(str(np.round(val,2))+self.unit)
-        self.slider.setValue(np.round(slider_val))
-
-    def get_value(self):
-        return interpolate(self.slider.value(),0,SLIDER_RESOLUTION,self.min,self.max)
-
-    def enterEvent(self, event):
-        self.text_label.setPalette(self.hover_palette)
-        self.value_label.setPalette(self.hover_palette)
-
-        self.hover.emit(True)
-        super().enterEvent(event)
-
-    def leaveEvent(self, event):
-        self.text_label.setPalette(self.default_palette)
-        self.value_label.setPalette(self.default_palette)
-        self.hover.emit(False)
-        super().leaveEvent(event)
-    
-
-class ColorButton(QPushButton):
-    colorChanged = Signal(QColor)
-
-    def __init__(self, color=QColor("white"), parent=None):
-        super().__init__(parent)
-        self.color = QColor()
-        self.setColor(color)
-        self.clicked.connect(self.pick_color)
-        self.setFixedSize(24,24)
-    def setColor(self, color):
-        self.color = QColor(color)
-        self.setStyleSheet(f"background-color: {self.color.name()};")
-
-    def color(self):
-        return self.color
-    @Slot()
-    def pick_color(self):
-        chosen = QColorDialog.getColor(self.color, self.parent(), "Select Color")
-        if chosen.isValid():
-            self.setColor(chosen)
-            self.colorChanged.emit(chosen)
