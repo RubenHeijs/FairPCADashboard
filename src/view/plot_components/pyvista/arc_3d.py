@@ -5,7 +5,7 @@ from src.util.helpers_general import *
 class Arc3D:
     def __init__(self,plotter:pv.Plotter,color):
         self.arc = pv.CircularArc(pointa=[0, 0, 0], pointb=[0, 0, 0], center=[0, 0, 0])
-        self.actor = plotter.add_mesh(self.arc, color = qcolor_to_pv_color(color),)
+        self.actor = plotter.add_mesh(self.arc, color = qcolor_to_pv_color(color), reset_camera=False)
         self.radius=0.5
         self.is_visible = True
         self.is_highlighted = False

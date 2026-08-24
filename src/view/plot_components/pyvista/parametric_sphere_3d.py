@@ -7,8 +7,8 @@ class ParametricSphere3D:
     def __init__(self,plotter:pv.Plotter,color, base_points, faces):
         self.base_points = base_points
         self.sphere = pv.PolyData(self.base_points, faces)
-        self.actor = plotter.add_mesh(self.sphere, color=qcolor_to_pv_color(color), opacity=0.6)
-        self.actor_mirror = plotter.add_mesh(self.sphere, color=qcolor_to_pv_color(color), opacity=0.6)
+        self.actor = plotter.add_mesh(self.sphere, color=qcolor_to_pv_color(color), opacity=0.6, reset_camera=False)
+        self.actor_mirror = plotter.add_mesh(self.sphere, color=qcolor_to_pv_color(color), opacity=0.6, reset_camera=False)
         self.actor_mirror.SetScale(-1,-1,-1)
     def set_sphere_points(self, points, faces):
         self.base_points = points
@@ -30,4 +30,4 @@ class ParametricSphere3D:
 
     def decouple(self, plotter):
         plotter.remove_actor(self.actor)
-
+        plotter.remove_actor(self.actor_mirror)

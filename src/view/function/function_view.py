@@ -14,6 +14,7 @@ class FunctionView(QWidget):
     function_delete_requested = Signal(object)
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setMinimumHeight(100)
         self.vbox = QVBoxLayout(self)
         self.control_hbox = QHBoxLayout()
         self.vbox.addLayout(self.control_hbox)
@@ -30,6 +31,12 @@ class FunctionView(QWidget):
         self.function_picker.currentIndexChanged.connect(self.on_function_selection_changed)
         self.control_hbox.addWidget(self.function_picker)
 
+        self.projection_picker = QComboBox()
+        self.projection_picker.setMaximumSize(120,20)
+        self.projection_picker.addItems(['Polar', 'Stereographic'])
+        self.projection_picker.currentIndexChanged.connect(self.on_projection_selection_changed)
+        self.control_hbox.addWidget(self.projection_picker)
+
         self.save_btn = QPushButton('s')
         self.save_btn.setFixedSize(20,20)
         self.save_btn.clicked.connect(self.on_save_clicked)
@@ -45,11 +52,7 @@ class FunctionView(QWidget):
         self.add_btn.clicked.connect(self.new_function_view_requested.emit)
         self.control_hbox.addWidget(self.add_btn)
 
-        self.projection_picker = QComboBox()
-        self.projection_picker.setFixedHeight(20)
-        self.projection_picker.addItems(['Polar', 'Stereographic'])
-        self.projection_picker.currentIndexChanged.connect(self.on_projection_selection_changed)
-        self.control_hbox.addWidget(self.projection_picker)
+
 
         self.group_function_views = []
 
@@ -59,6 +62,27 @@ class FunctionView(QWidget):
         self.vbox.addWidget(self.plotter.interactor)
         self.is_polar = True
         self.function = self.functions[self.function_picker.currentIndex()]
+        self.initialize_camera_settings()
+        self.cam_up_sign = 1
+    def enforce_up(self,caller, event):
+        #print('di',self.plotter.camera.direction)
+        #print('po',self.plotter.camera.position)
+        if np.abs(self.plotter.camera.up[2]) >=0.001:
+            self.plotter.camera.up = (0, 0, np.sign(self.plotter.camera.up[2]))
+        
+        #self.plotter.camera.orthogonalize_view_up()
+    def initialize_camera_settings(self):
+        self.plotter.iren.add_observer('InteractionEvent', self.enforce_up)
+        self.stereo_cam = pv.Camera()
+        self.stereo_cam.focal_point = (0,0,0)
+        self.stereo_cam.up = (0,0,1)
+        self.stereo_cam.position = (2,3,6)
+
+        self.polar_cam = pv.Camera()
+        self.polar_cam.focal_point = (np.pi/2, 0, 0)
+        self.polar_cam.up = (0,0,1)
+        self.polar_cam.position = (6,2,5)
+        self.plotter.camera = self.polar_cam
     def set_can_add(self, can_add):
         self.add_btn.setDisabled(not can_add)
     def set_can_close(self, can_close):
@@ -74,11 +98,17 @@ class FunctionView(QWidget):
      
     @Slot(int)
     def on_projection_selection_changed(self, index):
-        if index == 0 :
+        if index == 0 and self.is_polar == False:
+            self.stereo_cam = self.plotter.camera
+            self.plotter.camera = self.polar_cam
             self.is_polar = True
-        elif index == 1 :
+        elif index == 1 and self.is_polar == True:
+            self.polar_cam = self.plotter.camera
+            self.plotter.camera = self.stereo_cam
             self.is_polar = False
-
+        else: 
+            #Nothing changed
+            return
         for group_function_view in self.group_function_views:
             group_function_view.set_is_polar(self.is_polar)  
                   

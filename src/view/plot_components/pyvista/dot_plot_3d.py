@@ -6,7 +6,7 @@ class DotPlot3D:
     def __init__(self,plotter:pv.Plotter,color):
         self.n = 2
         self.scatter = pv.PolyData(np.array([[0.0, 0.0, 0.0],[0.0, 0.0, 0.0]]))
-        self.actor = plotter.add_points(self.scatter, render_points_as_spheres = True, color =  qcolor_to_pv_color(color), point_size = 10)
+        self.actor = plotter.add_points(self.scatter, render_points_as_spheres = True, color =  qcolor_to_pv_color(color), point_size = 10, reset_camera=False)
     def update(self, data):
 
         if(data.shape[1]!=self.n):

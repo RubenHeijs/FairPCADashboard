@@ -22,7 +22,7 @@ class FunctionPanel(QWidget):
         self.function_views.append(function)
 
         self.max_n_views = 6
-
+        self.update_arrangement()
 
 
     def on_group_function_view_connector_delete_requested(self, group_scatter):

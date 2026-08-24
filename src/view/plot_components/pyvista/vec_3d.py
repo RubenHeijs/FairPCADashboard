@@ -9,8 +9,7 @@ class Vec3D:
         self.is_visible = True
         self.color = qcolor_to_pv_color(color)
         self.vec = pv.Line([0,0,0], [0,0,0])
-        self.actor = plotter.add_mesh(self.vec, color = self.color, 
-                                           line_width = 5, render_lines_as_tubes = True)
+        self.actor = plotter.add_mesh(self.vec, color = self.color, line_width = 5, render_lines_as_tubes = True, reset_camera=False)
         self.silhouette_actor = plotter.add_silhouette(self.vec,color = self.color,line_width = 10)
         self.silhouette_actor.SetVisibility(False)
 

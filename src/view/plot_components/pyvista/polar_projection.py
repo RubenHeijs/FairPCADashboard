@@ -12,7 +12,7 @@ class PolarProjection:
         coords = [[-1,-1], [-1,0], [-1,1],
                   [0,-1], [0,0],    [0,1],
                   [1,-1], [1,0],  [1,1]] 
-        coords = [[0,0]]
+        coords = [[0,0], [0,-1]]
         for coord in coords:
             self.add_copy(plotter, color, coord[0], coord[1])
     def add_copy(self,plotter,color, x, y ):
@@ -22,7 +22,7 @@ class PolarProjection:
             x+=1
             edges = True
             scale = -1
-        actor = plotter.add_mesh(self.surface, color=qcolor_to_pv_color(color), show_edges=edges)
+        actor = plotter.add_mesh(self.surface, color=qcolor_to_pv_color(color), show_edges=False, reset_camera=False)
         actor.SetScale(scale,1,1)        
         actor.SetPosition(np.pi*x, np.pi*y,0)
         self.actors.append(actor)

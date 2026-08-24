@@ -12,7 +12,10 @@ class ScatterPanel(QWidget):
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.plotter.interactor)
-
+        self.plotter.camera.focal_point = (0, 0, 0)
+        self.plotter.camera.up = (0,0,1)
+        self.plotter.camera.position = (6,2,5)
+        self.plotter.add_axes()
     @Slot()
     def on_group_requests_render(self):
         self.plotter.suppress_rendering = False
