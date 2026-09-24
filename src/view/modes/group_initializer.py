@@ -24,19 +24,19 @@ class GroupInitializer:
         col = self.get_color()
         name = 'Group ' + str(self.group_count)
 
-        group = Group(np.array([[1,0,0],[0,1,0],[0,0,1]]), 50)
+        group = Group(np.array([[1,0,0],[0,1,0],[0,0,1]]), name, col, 50)
         group_control_view = PolarControl(name, col)
 
-        group_pv_sampler = GroupPVSampler(group.get_vis_data(), surface_data)
+        group_pv_sampler = GroupPVSampler(group.get_summary_data(), surface_data)
 
-        group_scatter_view = GroupScatter3D(col, group_pv_sampler.get_vis_data(), surface_data)
-        group_function_view_connector = GroupFunctionViewConnector(col, group_pv_sampler.get_vis_data(), surface_data)
+        group_scatter_view = GroupScatter3D(col, group_pv_sampler.get_summary_data(), surface_data)
+        group_function_view_connector = GroupFunctionViewConnector(col, group_pv_sampler.get_summary_data(), surface_data)
 
         #group - control_view linking
         #group_control_view.set_values() TODO IK HEB NOG NIKS OM DIT TE DOEN
         group_control_view.delete_requested.connect(group.on_delete_requested)
         group_control_view.group_input_changed.connect(group.update_by_eig)
-
+        group_control_view.color_changed.connect(group.on_color_changed)
         #control_view - scatter_view linking
         group_control_view.delete_requested.connect(group_scatter_view.on_delete_requested)
         group_control_view.color_changed.connect(group_scatter_view.on_color_changed)

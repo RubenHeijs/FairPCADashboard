@@ -7,7 +7,7 @@ from src.util.helpers_general import interpolate
 class ControlSlider(QWidget):
     value_changed = Signal(float)
     hover = Signal(bool)
-    def __init__(self,title,min, max, unit = "", parent = None, display_slider = True, resolution = 1000):
+    def __init__(self,title,min, max, unit = "", parent = None, display_slider = True, resolution = 1000, init_val = 0):
         super(ControlSlider, self).__init__(parent)
         self.resolution = resolution
         self.unit = unit
@@ -24,7 +24,8 @@ class ControlSlider(QWidget):
         self.slider = QSlider(orientation = Qt.Orientation.Horizontal)
         self.slider.valueChanged.connect(self.on_slider_change)
         self.slider.setRange(0,resolution)
-        self.grid.addWidget(self.slider)
+        self.grid.addWidget(self.slider)    
+
 
         policy = self.slider.sizePolicy()
         policy.setRetainSizeWhenHidden(True)
@@ -37,6 +38,8 @@ class ControlSlider(QWidget):
 
         self.hover_palette = self.text_label.palette()
         self.default_palette = self.text_label.palette()
+        self.set_value(init_val)
+
     def on_slider_change(self,slider_val):
         val = interpolate(slider_val,0,self.resolution,self.min,self.max)
         self.value_label.setText(str(np.round(val,2))+self.unit)
@@ -54,7 +57,9 @@ class ControlSlider(QWidget):
         val = max(min(val,self.max),self.min)
         slider_val = interpolate(val,self.min, self.max, 0, self.resolution)
         self.value_label.setText(str(np.round(val,2))+self.unit)
+        self.slider.valueChanged.disconnect(self.on_slider_change) #Maybe theres a more elegant way to not trigger valueChanged
         self.slider.setValue(np.round(slider_val))
+        self.slider.valueChanged.connect(self.on_slider_change)
 
     def get_value(self):
         return interpolate(self.slider.value(),0,self.resolution,self.min,self.max)

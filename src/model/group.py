@@ -3,19 +3,23 @@ import numpy as np
 from src.util.helpers_general import whiten_svd
 from PySide6.QtCore import *
 from dataclasses import dataclass
-
+from PySide6.QtGui import QColor
 class Group(QObject):
     data_changed = Signal(object)
     group_changed = Signal(object)
     delete_requested = Signal(object)
+    color_changed = Signal(QColor)
     @dataclass
-    class VisualisationData:
+    class SummaryData:
+        label: object
         A: object
         vecs: object
         vals: object
         projected_variances: object
 
-    def __init__(self, init_A, n_points=50):
+    def __init__(self, init_A, label, color,n_points=50):
+        self.label = label
+        self.color = color
         super().__init__()
         self.A = init_A
         self.dims = self.A.shape[0]
@@ -46,9 +50,12 @@ class Group(QObject):
     def update_by_A(self, A):
         if(self.check_and_update_eigen(A)):
             self.adjust_data()
-            self.group_changed.emit(self.get_vis_data())
+            self.group_changed.emit(self.get_summary_data())
 
-            
+    @Slot(QColor)
+    def on_color_changed(self, col):
+        self.color = col
+        self.color_changed.emit(col)
     @Slot(object, object, float)
     def update_by_eig(self,e_vals,e_vecs,var):
         if(len(e_vals)!=len(e_vecs)):
@@ -56,11 +63,14 @@ class Group(QObject):
         self.set_ED(np.array(e_vecs).T, np.array(e_vals)*var)
         self.retrieve_A()
         self.adjust_data()
-        self.group_changed.emit(self.get_vis_data())
+        self.group_changed.emit(self.get_summary_data())
 
-    def get_vis_data(self):
-        return self.VisualisationData(self.get_A(),self.e_vecs.T,self.e_vals, None)
+    def get_summary_data(self):
+        return self.SummaryData(self.label,self.get_A(),self.e_vecs.T,self.e_vals, None)
 
+    def get_label(self):
+        return self.label
+    
     def set_A(self, new_A):
         self.A = new_A
         
@@ -119,6 +129,8 @@ class Group(QObject):
     
     def get_data(self):
         return self.data
+    def get_color(self):
+        return self.color
     @Slot()
     def on_delete_requested(self):
         self.delete_requested.emit(self)

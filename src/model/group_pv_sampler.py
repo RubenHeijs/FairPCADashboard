@@ -28,5 +28,5 @@ class GroupPVSampler(QObject):
         self.vis_data.projected_variances = projected_variance(self.surface_data.vecs, self.vis_data.A)
         self.group_changed.emit(self.vis_data)
 
-    def get_vis_data(self):
+    def get_summary_data(self):
         return self.vis_data
