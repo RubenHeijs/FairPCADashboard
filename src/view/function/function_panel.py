@@ -9,6 +9,7 @@ class FunctionPanel(QWidget):
         super().__init__(parent)
         self.group_function_view_connectors = []
         self.function_views = []
+        self.solution_views = []
         self.hbox = QVBoxLayout(self)
 
         self.f12_34_splitter = QSplitter(Qt.Orientation.Vertical)
@@ -27,12 +28,23 @@ class FunctionPanel(QWidget):
 
     def on_group_function_view_connector_delete_requested(self, group_scatter):
         self.group_function_view_connectors.remove(group_scatter)
-        #add cleanup
+        #add cleanup (done?)
+
     def add_group(self, group_function_view_connector):
         group_function_view_connector.delete_requested.connect(lambda : self.on_group_function_view_connector_delete_requested(group_function_view_connector))
         self.group_function_view_connectors.append(group_function_view_connector)
         for function_view in self.function_views:
             function_view.add_group(group_function_view_connector.make_group_function_view())
+
+    def on_solution_view_delete_requested(self, solution_view):
+        self.solution_views.remove(solution_view)
+        #add cleanup (done?)
+    def add_solution_view(self, solution_view):
+        solution_view.delete_requested.connect(lambda : self.on_solution_view_delete_requested(solution_view))
+        self.solution_views.append(solution_view)
+        for function_view in self.function_views:
+            function_view.add_solution_view(solution_view.make_next_solution_view())
+    
     @Slot(object)
     def on_function_delete_requested(self, function):
         self.function_views.remove(function)
@@ -45,11 +57,14 @@ class FunctionPanel(QWidget):
         function_view = FunctionView()
         function_view.function_delete_requested.connect(self.on_function_delete_requested)
         function_view.new_function_view_requested.connect(self.on_new_function_view_requested)
+        for solution_view in self.solution_views:
+            function_view.add_solution_view(solution_view.make_next_solution_view())
         for connector in self.group_function_view_connectors:
             function_view.add_group(connector.make_group_function_view())
         self.function_views.append(function_view)
         self.f3_4_splitter.addWidget(function_view)
         self.update_arrangement()
+
     def update_arrangement(self):
         for view in self.function_views:
             view.set_can_add(len(self.function_views) < self.max_n_views)

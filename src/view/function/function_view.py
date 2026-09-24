@@ -55,7 +55,7 @@ class FunctionView(QWidget):
 
 
         self.group_function_views = []
-
+        self.solution_views = []
         self.plotter = QtInteractor(self)
         self.plotter.suppress_rendering = True
         
@@ -65,12 +65,9 @@ class FunctionView(QWidget):
         self.initialize_camera_settings()
         self.cam_up_sign = 1
     def enforce_up(self,caller, event):
-        #print('di',self.plotter.camera.direction)
-        #print('po',self.plotter.camera.position)
         if np.abs(self.plotter.camera.up[2]) >=0.001:
             self.plotter.camera.up = (0, 0, np.sign(self.plotter.camera.up[2]))
         
-        #self.plotter.camera.orthogonalize_view_up()
     def initialize_camera_settings(self):
         self.plotter.iren.add_observer('InteractionEvent', self.enforce_up)
         self.stereo_cam = pv.Camera()
@@ -87,9 +84,11 @@ class FunctionView(QWidget):
         self.add_btn.setDisabled(not can_add)
     def set_can_close(self, can_close):
         self.close_btn.setDisabled(not can_close)
+
     @Slot()
     def on_save_clicked(self):
         print('Save screenshot')
+
     @Slot(int)
     def on_function_selection_changed(self, index):
         self.function = self.functions[index]
@@ -102,10 +101,14 @@ class FunctionView(QWidget):
             self.stereo_cam = self.plotter.camera
             self.plotter.camera = self.polar_cam
             self.is_polar = True
+            for solution_view in self.solution_views:
+                solution_view.set_polar_mode()
         elif index == 1 and self.is_polar == True:
             self.polar_cam = self.plotter.camera
             self.plotter.camera = self.stereo_cam
             self.is_polar = False
+            for solution_view in self.solution_views:
+                solution_view.set_stereographic_mode()
         else: 
             #Nothing changed
             return
@@ -113,7 +116,7 @@ class FunctionView(QWidget):
             group_function_view.set_is_polar(self.is_polar)  
                   
     @Slot()
-    def on_group_requests_render(self):
+    def on_render_requested(self):
         self.plotter.suppress_rendering = False
         self.plotter.render()
         self.plotter.suppress_rendering = True
@@ -122,10 +125,23 @@ class FunctionView(QWidget):
         self.group_function_views.remove(group_function_view)
         group_function_view.remove_from_plotter(self.plotter)
 
+    def on_solution_view_delete_requested(self, solution_view):
+        self.solution_views.remove(solution_view)
+        solution_view.remove_from_plotter(self.plotter)
+
     def add_group(self, group_function_view):
 
         group_function_view.add_to_plotter(self.plotter, self.is_polar, self.function)
-
         group_function_view.delete_requested.connect(lambda : self.on_group_scatter_delete_requested(group_function_view))
-        group_function_view.render_requested.connect(self.on_group_requests_render)
+        group_function_view.render_requested.connect(self.on_render_requested)
         self.group_function_views.append(group_function_view)
+
+    def add_solution_view(self, solution_view):# Not sure if this is the way to go. Maybe I can store a copy and add to different plotters?
+        solution_view.add_to_plotter(self.plotter)
+        if self.is_polar:
+            solution_view.set_polar_mode()
+        else:
+            solution_view.set_stereographic_mode()
+        solution_view.delete_requested.connect(lambda : self.on_solution_view_delete_requested(solution_view))
+        solution_view.render_requested.connect(self.on_render_requested)
+        self.solution_views.append(solution_view) 
