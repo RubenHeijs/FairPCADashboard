@@ -6,10 +6,10 @@ import pyvista as pv
 from pyvistaqt import QtInteractor
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QHBoxLayout
 from PySide6.QtCore import Slot
-from src.model.function.projected_variance import ProjectedVariance
+from src.model.function.reconstruction_error import ReconstructionError
 from src.model.function.projected_variance_loss import ProjectedVarianceLoss
 from src.model.function.proportional_projected_variance_loss import ProportionalProjectedVarianceLoss
-class FunctionView(QWidget):
+class FunctionView3D(QWidget):
     new_function_view_requested = Signal()
     function_delete_requested = Signal(object)
     def __init__(self, parent=None):
@@ -20,7 +20,7 @@ class FunctionView(QWidget):
         self.vbox.addLayout(self.control_hbox)
 
 
-        self.functions = [ProjectedVariance(), 
+        self.functions = [ReconstructionError(), 
                           ProjectedVarianceLoss(), 
                           ProportionalProjectedVarianceLoss()]
 

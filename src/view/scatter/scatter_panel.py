@@ -2,6 +2,7 @@ import pyvista as pv
 from pyvistaqt import QtInteractor
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Slot
+from src.view.plot_components.matplotlib.mpl_widget import MplWidget
 
 class ScatterPanel(QWidget):
     def __init__(self, parent=None):

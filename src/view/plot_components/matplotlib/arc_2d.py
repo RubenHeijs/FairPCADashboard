@@ -1,5 +1,5 @@
 
-class Arc3D:
+class Arc2D:
     def __init__(self,plotter,color):
         self.color = color
         return
@@ -13,4 +13,5 @@ class Arc3D:
 
     def set_visible(self, visible_on):
         return
-       
+    def remove(self):
+        return

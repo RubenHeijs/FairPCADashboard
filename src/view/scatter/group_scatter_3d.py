@@ -28,8 +28,13 @@ class GroupScatter3D(QObject):
         self.theta_view = Arc3D(plotter,self.color)
         self.theta_ghost_vec_view = Vec3D(plotter, self.color)
         self.parametric_surface_view = ParametricSphere3D(plotter, self.color, self.surface_data.vecs, self.surface_data.vec_faces)
+        
+        self.data_view.set_visible(False)
+        self.parametric_surface_view.set_visible(False)
         self.update()
-        self.coupled = True 
+        self.coupled = True         
+
+        
 
     def remove_from_plotter(self,plotter):
         self.vec_1_view.decouple(plotter)

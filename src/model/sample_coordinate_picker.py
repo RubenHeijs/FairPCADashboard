@@ -1,6 +1,8 @@
 from PySide6.QtCore import *
 import numpy as np
 from src.util.helpers_3d import *
+from src.util.helpers_2d import *
+
 from scipy.spatial import ConvexHull, Delaunay
 from dataclasses import dataclass
 '''
@@ -10,7 +12,7 @@ class SampleCoordinatePicker(QObject):
 
     resolution_changed = Signal(object)
     @dataclass
-    class SurfaceData:
+    class SurfaceData3D:
         vecs: object
         vec_faces: object
         polar: object
@@ -18,9 +20,16 @@ class SampleCoordinatePicker(QObject):
         stereographic: object
         stereographic_faces: object
 
-    def __init__(self, n_samples):
+    @dataclass
+    class SurfaceData2D:
+        vecs: object
+        angles:object
+
+    def __init__(self, n_samples, is_2d):
         super().__init__()
+        self.is_2d = is_2d
         self.set_resolution(n_samples)
+
     def fibonacci_half_sphere(self,n_samples):
         i = np.arange(n_samples)
         golden_angle = np.pi * (3 - np.sqrt(5))  
@@ -53,8 +62,21 @@ class SampleCoordinatePicker(QObject):
             simplices        
         ]).astype(np.int64).ravel()
         return vec_faces
-    
-    def set_resolution(self, n_samples):
+    def set_resolution(self,n_samples):
+        if self.is_2d:
+            self.set_resolution_2d(n_samples)
+        else :
+            self.set_resolution_3d(n_samples)
+
+    def set_resolution_2d(self, n_samples):
+        alphas = np.linspace(0,np.pi,n_samples)
+        vecs = []
+        for alpha in alphas:
+            vecs.append(angle_to_euclidean(alpha))
+        self.surface_data = self.SurfaceData2D(np.array(vecs), alphas)
+        self.resolution_changed.emit(self.surface_data)
+
+    def set_resolution_3d(self, n_samples):
         circle_sample_ratio = 0.2
         n_circle_samples = np.ceil(n_samples*circle_sample_ratio)
         n_fib_samples = n_samples - n_circle_samples 
@@ -79,7 +101,7 @@ class SampleCoordinatePicker(QObject):
         vecs = np.vstack([vecs, polar_to_euclidean(polar_corners)])
         stereographic = [ euclidean_to_stereographic(vecs), euclidean_to_stereographic(-vecs)]
 
-        self.surface_data = self.SurfaceData(vecs, vec_faces, polar_coords, polar_faces, stereographic, vec_faces)
+        self.surface_data = self.SurfaceData3D(vecs, vec_faces, polar_coords, polar_faces, stereographic, vec_faces)
         self.resolution_changed.emit(self.surface_data)
 
     def get_surface_data(self):

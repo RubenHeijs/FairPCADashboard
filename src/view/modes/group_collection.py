@@ -14,6 +14,10 @@ class GroupCollection(QObject):
         self.group_pv_samplers.append(group_pv_sampler)
         group.delete_requested.connect(self.on_group_delete_requested)
         self.group_added.emit(group)
+    def add_group_without_sampler(self, group):
+        self.groups.append(group)
+        group.delete_requested.connect(self.on_group_delete_requested)
+        self.group_added.emit(group)
 
     @Slot(object)
     def on_group_delete_requested(self, group):

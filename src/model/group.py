@@ -17,7 +17,7 @@ class Group(QObject):
         vals: object
         projected_variances: object
 
-    def __init__(self, init_A, label, color,n_points=50):
+    def __init__(self, init_A, label, color,n_points=20):
         self.label = label
         self.color = color
         super().__init__()

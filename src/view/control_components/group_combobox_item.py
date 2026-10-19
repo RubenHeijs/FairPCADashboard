@@ -14,7 +14,6 @@ class GroupComboboxItem(QWidget):
         group.group_changed.connect(self.on_group_changed)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(6, 4, 6, 4)
-
         self.name_label = QLabel(group.get_label())
         self.name_palette = self.name_label.palette()
         self.name_palette.setColor(QPalette.ColorRole.Text,group.get_color())

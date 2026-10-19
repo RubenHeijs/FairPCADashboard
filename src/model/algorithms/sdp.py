@@ -23,10 +23,10 @@ class SDP:
         for group in groups:
             program.add_constraint(function.get_sdp_constraint(group, X, z, out_dim))
 
-        program.solve(verbose = 0,solver='cvxopt')
+        sol = program.solve(verbose = 0,solver='cvxopt')
         e_vals, e_vecs = np.linalg.eig(X.value)
         vecs = []
         for i in range(out_dim):
             vecs.append( np.real(e_vecs[:, np.argsort(e_vals)[-1 - i]]))
-        return vecs
+        return vecs, z
     

@@ -41,3 +41,10 @@ def interpolate(val_in, val_in_min, val_in_max, val_out_min, val_out_max):
 
 def qcolor_to_pv_color(qcolor):
     return (qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF())
+
+def qcolor_to_mpl_color(qcolor):
+    div = 255
+    pv_color = (qcolor.redF()/div, qcolor.greenF()/div, qcolor.blueF()/div, qcolor.alphaF()/div)
+    return pv_color
+def projected_variance(vec, A):
+    return np.sum((vec @ A) * vec, axis=-1)

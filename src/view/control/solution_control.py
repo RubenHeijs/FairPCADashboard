@@ -5,7 +5,7 @@ from PySide6.QtCore import Signal
 from src.util.helpers_3d import get_basis_from_angles
 from src.view.control_components.color_button import ColorButton
 from src.view.control_components.control_slider import ControlSlider
-from src.model.function.projected_variance import ProjectedVariance
+from src.model.function.reconstruction_error import ReconstructionError
 from src.model.function.projected_variance_loss import ProjectedVarianceLoss
 from src.model.algorithms.sdp import SDP
 from src.model.function.proportional_projected_variance_loss import ProportionalProjectedVarianceLoss
@@ -59,7 +59,7 @@ class SolutionControl(QFrame):
         self.algorithms_picker.currentIndexChanged.connect(self.on_algorithm_selection_changed)
         self.grid.addWidget(self.algorithms_picker,0,0,1,1)
 
-        self.functions = [ProjectedVariance(), 
+        self.functions = [ReconstructionError(), 
                           ProjectedVarianceLoss(), 
                           ProportionalProjectedVarianceLoss()]
         self.oo_picker = QComboBox()
@@ -134,7 +134,7 @@ class SolutionControl(QFrame):
         if len(self.current_group_data_selection) >= 2:
             function = self.functions[self.oo_picker.currentIndex()]
             if self.algorithms_picker.currentIndex() == 1:
-                solution = SDP().solve(groups= self.current_group_data_selection,
+                solution, score = SDP().solve(groups= self.current_group_data_selection,
                                     function = function,
                                     in_dim = 3,
                                     out_dim = 1)

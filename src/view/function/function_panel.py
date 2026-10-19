@@ -2,11 +2,14 @@ import pyvista as pv
 from pyvistaqt import QtInteractor
 from PySide6.QtWidgets import *
 from PySide6.QtCore import Qt, Slot
-from src.view.function.function_view import FunctionView
+from src.view.function.function_view_3d import FunctionView3D
+from src.view.function.function_view_2d import FunctionView2D
 
 class FunctionPanel(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, is_3d = False):
         super().__init__(parent)
+        self.is_3d = is_3d
+
         self.group_function_views = []
         self.function_views = []
         self.solution_views = []
@@ -16,14 +19,11 @@ class FunctionPanel(QWidget):
         self.hbox.addWidget(self.f12_34_splitter)
         self.f1_2_splitter = QSplitter(Qt.Orientation.Horizontal, self.f12_34_splitter)
         self.f3_4_splitter = QSplitter(Qt.Orientation.Horizontal, self.f12_34_splitter)
-        
-        function = FunctionView(self.f1_2_splitter)
-        function.function_delete_requested.connect(self.on_function_delete_requested)
-        function.new_function_view_requested.connect(self.on_new_function_view_requested)
-        self.function_views.append(function)
 
         self.max_n_views = 6
-        self.update_arrangement()
+
+        self.on_new_function_view_requested()
+
 
 
     def on_group_function_view_delete_requested(self, group_function_view):
@@ -54,7 +54,10 @@ class FunctionPanel(QWidget):
 
     @Slot()
     def on_new_function_view_requested(self):
-        function_view = FunctionView()
+        if self.is_3d:
+            function_view = FunctionView3D()
+        else :
+            function_view = FunctionView2D()
         function_view.function_delete_requested.connect(self.on_function_delete_requested)
         function_view.new_function_view_requested.connect(self.on_new_function_view_requested)
         for solution_view in self.solution_views:

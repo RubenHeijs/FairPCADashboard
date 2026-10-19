@@ -44,6 +44,7 @@ class GroupFunctionView3D(QObject):
         self.vec_1_view = SurfaceVec3D(plotter, self.color)
         self.vec_2_view = SurfaceVec3D(plotter, self.color)
         self.vec_3_view = SurfaceVec3D(plotter, self.color)
+
         self.stereographic_view = StereographicProjection(plotter, self.color, self.surface_data.stereographic[1], self.surface_data.stereographic[0], self.surface_data.stereographic_faces)
         self.polar_view = PolarProjection(plotter, self.color, self.surface_data.polar, self.surface_data.polar_faces)
         self.function = initial_function
@@ -51,7 +52,9 @@ class GroupFunctionView3D(QObject):
         #self.intersection_view
         self.coupled = True 
         self.set_is_polar(initial_is_polar)
-
+        self.vec_1_view.set_visible(False) 
+        self.vec_2_view.set_visible(False)
+        self.vec_3_view.set_visible(False)
     def remove_from_plotter(self,plotter):
         self.vec_1_view.decouple(plotter)
         self.vec_2_view.decouple(plotter)
